@@ -1,0 +1,250 @@
+import React, { useState, useEffect, useContext } from "react";
+import {
+  MDBCol,
+  MDBContainer,
+  MDBRow,
+  MDBCard,
+  MDBCardText,
+  MDBCardBody,
+  MDBCardImage,
+  MDBBtn,
+  MDBBreadcrumb,
+  MDBBreadcrumbItem,
+  MDBProgress,
+  MDBProgressBar,
+  MDBDropdown,
+  MDBDropdownToggle,
+  MDBDropdownMenu,
+  MDBDropdownItem,
+  MDBIcon,
+  MDBListGroup,
+  MDBListGroupItem,
+  MDBInput,
+} from "mdb-react-ui-kit";
+import data from "../../assets/data.json";
+import { useParams } from "react-router-dom";
+import axios from "../Api";
+import AuthContext from "../context/AuthContext";
+
+import "mdb-react-ui-kit/dist/css/mdb.min.css";
+
+export default function ProfilePage() {
+  const { handle } = useParams();
+  const { getLoggedIn, user } = useContext(AuthContext);
+  const [name, setName] = useState("");
+  const [age, setAge] = useState(0);
+  const [gender, setGender] = useState("male");
+  const [mail, setMail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [state, setState] = useState(0);
+  const [district, setDistrict] = useState(0);
+  const [address, setAddress] = useState("");
+  const [blood, setBlood] = useState(0);
+  const [edit, setEdit] = useState(true);
+  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+  useEffect(() => {
+    setName(user.name);
+    setAge(user.age);
+    setGender(user.gender);
+    setMail(user.email);
+    setPhone(user.phone);
+    data.states.forEach((e, i) => {
+      if (e.state === user.state) {
+        setState(i);
+        setDistrict(e.districts.indexOf(user.district));
+      }
+    });
+    setPassword("Lorem ipsum dolor sit amet consectetur adipisicing elit.");
+    setAddress(user.address);
+    setBlood(bloodGroups.indexOf(user.bloodGroup));
+  }, [user]);
+
+  const update = async () => {
+    const formData = {
+      name,
+      age,
+      gender,
+      bloodGroup: bloodGroups[blood],
+      email: mail,
+      phone,
+      state: data.states[state].state,
+      district: data.states[state].districts[district],
+      address,
+    };
+
+    try {
+      await axios.put(`/user/`, formData);
+      setEdit(true); // Exit edit mode
+      await getLoggedIn(); // Refresh user data
+      alert("User updated successfully");
+    } catch (error) {
+      alert("User not updated");
+    }
+  };
+
+  return (
+    <section style={{ backgroundColor: "#eee" }}>
+      <MDBContainer className="py-5">
+        <MDBRow>
+          <MDBCol>
+            <MDBBreadcrumb className="bg-light rounded-3 p-3 mb-4">
+              <MDBBreadcrumbItem>
+                <a href="#">Home</a>
+              </MDBBreadcrumbItem>
+              <MDBBreadcrumbItem>
+                <a href="#">User</a>
+              </MDBBreadcrumbItem>
+              <MDBBreadcrumbItem active>User Profile</MDBBreadcrumbItem>
+            </MDBBreadcrumb>
+          </MDBCol>
+        </MDBRow>
+
+        <MDBRow>
+          <MDBCol lg="4">
+            <MDBCard className="mb-4">
+              <MDBCardBody className="text-center">
+                <MDBCardImage
+                  src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                  alt="avatar"
+                  className="rounded-circle"
+                  style={{ width: "150px" }}
+                  fluid
+                />
+                <p className="text-muted mb-1">Full Stack Developer</p>
+                <p className="text-muted mb-4">Bay Area, San Francisco, CA</p>
+                <div className="d-flex justify-content-center mb-2">
+                  <MDBBtn>Follow</MDBBtn>
+                  <MDBBtn outline className="ms-1">
+                    Message
+                  </MDBBtn>
+                </div>
+              </MDBCardBody>
+            </MDBCard>
+
+            <MDBCard className="mb-4 mb-lg-0">
+              <MDBCardBody className="p-0">
+                <MDBListGroup flush className="rounded-3">
+                  <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
+                    <MDBIcon fas icon="globe fa-lg text-warning" />
+                    <MDBCardText>https://mdbootstrap.com</MDBCardText>
+                  </MDBListGroupItem>
+                  <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
+                    <MDBIcon
+                      fab
+                      icon="github fa-lg"
+                      style={{ color: "#333333" }}
+                    />
+                    <MDBCardText>mdbootstrap</MDBCardText>
+                  </MDBListGroupItem>
+                  <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
+                    <MDBIcon
+                      fab
+                      icon="twitter fa-lg"
+                      style={{ color: "#55acee" }}
+                    />
+                    <MDBCardText>@mdbootstrap</MDBCardText>
+                  </MDBListGroupItem>
+                  <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
+                    <MDBIcon
+                      fab
+                      icon="instagram fa-lg"
+                      style={{ color: "#ac2bac" }}
+                    />
+                    <MDBCardText>mdbootstrap</MDBCardText>
+                  </MDBListGroupItem>
+                  <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
+                    <MDBIcon
+                      fab
+                      icon="facebook fa-lg"
+                      style={{ color: "#3b5998" }}
+                    />
+                    <MDBCardText>mdbootstrap</MDBCardText>
+                  </MDBListGroupItem>
+                </MDBListGroup>
+              </MDBCardBody>
+            </MDBCard>
+          </MDBCol>
+          <MDBCol lg="8">
+            <MDBCard className="mb-4">
+              <MDBCardBody>
+                <form
+                  className="space-y-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    update();
+                  }}
+                >
+                  <MDBRow>
+                    <MDBCol sm="3">
+                      <MDBCardText>Full Name</MDBCardText>
+                    </MDBCol>
+                    <MDBCol sm="9">
+                      {edit ? (
+                        <MDBCardText className="text-muted">
+                          {name}
+                        </MDBCardText>
+                      ) : (
+                        <MDBInput
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                        />
+                      )}
+                    </MDBCol>
+                  </MDBRow>
+                  <hr />
+                  <MDBRow>
+                    <MDBCol sm="3">
+                      <MDBCardText>Email</MDBCardText>
+                    </MDBCol>
+                    <MDBCol sm="9">
+                      {edit ? (
+                        <MDBCardText className="text-muted">
+                          {mail}
+                        </MDBCardText>
+                      ) : (
+                        <MDBInput
+                          type="email"
+                          placeholder="Enter your email"
+                          value={mail}
+                          onChange={(e) => setMail(e.target.value)}
+                        />
+                      )}
+                    </MDBCol>
+                  </MDBRow>
+                  <hr />
+                  <MDBRow>
+                    <MDBCol sm="3">
+                      <MDBCardText>Phone</MDBCardText>
+                    </MDBCol>
+                    <MDBCol sm="9">
+                      {edit ? (
+                        <MDBCardText className="text-muted">
+                          {phone}
+                        </MDBCardText>
+                      ) : (
+                        <MDBInput
+                          type="text"
+                          placeholder="Enter your phone number"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                        />
+                      )}
+                    </MDBCol>
+                  </MDBRow>
+                  <hr />
+                  <MDBRow>
+                    <MDBCol sm="3">
+                      <MDBCardText>Age</MDBCardText>
+                    </MDBCol>
+                    <MDBCol sm="9">
+                      {edit ? (
+                        <MDBCardText className="text-muted">
+                          {age}
+                        </MDBCardText>
+                      ) : (
+                        <MDBInput
+                          type
